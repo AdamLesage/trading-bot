@@ -1,4 +1,4 @@
-name: Chocolatine
+name: Github Actions Trading
 on:
   push:
     branches-ignore:
@@ -8,7 +8,7 @@ on:
       - "ga-ignore-*"
 
 env:
-  MIRROR_URL: ${{ secrets.MIRROR_URL }}
+  MIRROR_URL: https://github.com/EpitechPromo2027/B-CNA-410-NAN-4-1-trade-adam.lesage.git
   SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
 
 jobs:
