@@ -32,6 +32,8 @@ class Bot:
                 reading = input()
                 if len(reading) == 0:
                     continue
+                if reading == "quit":
+                    exit(0)
                 self.parse(reading)
             except EOFError:
                 exit(0)

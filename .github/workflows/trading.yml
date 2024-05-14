@@ -20,7 +20,7 @@ jobs:
     - uses: actions/checkout@v2
       with:
         fetch-depth: 0
-    - run: python3 trade.py < /dev/null/
+    - run: python3 trade.py < .github/workflows/quit-file.txt
       timeout-minutes: 1
   push_to_mirror:
     needs:
