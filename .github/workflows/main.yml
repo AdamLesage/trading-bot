@@ -7,17 +7,13 @@ on:
     branches-ignore:
       - "ga-ignore-*"
 
-env:
-  MIRROR_URL: https://github.com/EpitechPromo2027/B-CNA-410-NAN-4-1-trade-adam.lesage.git
-  SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-
 jobs:
   check_program_exit_status:
     runs-on: ubuntu-latest
     container:
       image: epitechcontent/epitest-docker:latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       with:
         fetch-depth: 0
     - run: python3 trade.py < .github/workflows/quit-file.txt
@@ -27,10 +23,10 @@ jobs:
       - check_program_exit_status
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       with:
         fetch-depth: 0
     - uses: pixta-dev/repository-mirroring-action@v1
       with:
-        target_repo_url: ${{ env.MIRROR_URL }}
-        ssh_private_key: ${{ env.SSH_PRIVATE_KEY }}
+        target_repo_url: https://github.com/EpitechPromo2027/B-CNA-410-NAN-4-1-trade-adam.lesage.git
+        ssh_private_key: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
