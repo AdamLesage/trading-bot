@@ -5,22 +5,9 @@ __version__ = "1.0"
 
 import sys
 import math
-from matplotlib import pyplot as plt
+# from matplotlib import pyplot as plt
 
 PERIOD = 10
-
-def standard_deviation(values, period=PERIOD):
-    if len(values) < period:
-        return 0
-    mean = sum(values[-period:]) / period
-    variance = sum((value - mean) ** 2 for value in values[-period:]) / period
-    return math.sqrt(variance)
-
-def current_deviation(values, value, period=PERIOD):
-    if len(values) < period:
-        return 0
-    mean = sum(values[-period:]) / period
-    return (value - mean) / mean
 
 class Bot:
     def __init__(self):
@@ -49,20 +36,6 @@ class Bot:
             dollars = self.botState.stacks["USDT"]
             current_closing_price = self.botState.charts["USDT_BTC"].closes[-1]
             self.botState.closing_prices.append(current_closing_price)
-            std_deviation = standard_deviation(self.botState.closing_prices)
-            current_dev = current_deviation(self.botState.closing_prices, current_closing_price)
-            print(f"{std_deviation=}, {current_dev=}, {current_closing_price=}", file=sys.stderr)
-
-            if std_deviation == 0:
-                print("pass", flush=True)
-            elif current_dev > 0.5:
-                print(f"buy USDT_BTC {0.1 * dollars}", flush=True)
-            elif current_dev < -0.5:
-                if dollars < 100:
-                    print("no_moves", flush=True)
-                print(f"sell USDT_BTC {0.1 * dollars}", flush=True)
-            else:
-                print("pass", flush=True)
 
             # affordable = dollars / current_closing_price
             # # print(f'My stacks are {dollars}. The current closing price is {current_closing_price}. So I can afford {affordable}', file=sys.stderr)
