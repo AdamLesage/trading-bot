@@ -5,6 +5,9 @@ __version__ = "1.0"
 
 import sys
 import math
+from MACD import MACD_state, MACD
+from RSI import RSI
+from BotAction import BotAction
 # from matplotlib import pyplot as plt
 
 PERIOD = 10
@@ -12,6 +15,9 @@ PERIOD = 10
 class Bot:
     def __init__(self):
         self.botState = BotState()
+        self.rsi = RSI(14)
+        self.botAction = BotAction()
+        self.macd = MACD(12, 26, 9)
 
     def run(self):
         while True:
@@ -36,14 +42,14 @@ class Bot:
             dollars = self.botState.stacks["USDT"]
             current_closing_price = self.botState.charts["USDT_BTC"].closes[-1]
             self.botState.closing_prices.append(current_closing_price)
-
-            # affordable = dollars / current_closing_price
-            # # print(f'My stacks are {dollars}. The current closing price is {current_closing_price}. So I can afford {affordable}', file=sys.stderr)
+            # self.rsi.calculate_rsi(self.botState.closing_prices)
+            self.macd.calculate_macd(self.botState.closing_prices)
+            self.macd.do_action(self.botAction)
+            affordable = dollars / current_closing_price
             # if dollars < 100:
-            #     print("no_moves", flush=True)
+            #     self.botAction.passAction()
             # else:
-            #     print(f'buy USDT_BTC {0.1 * affordable}', flush=True)
-            # # print(f"stack = {self.botState.stacks}", file=sys.stderr)
+            #     self.botAction.buyAction(0.1 * affordable)
 
 
 class Candle:

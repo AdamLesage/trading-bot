@@ -6,6 +6,8 @@
 ##
 
 from enum import Enum
+from BotAction import BotAction
+import sys
 
 class MACD_state(Enum):
     """ Enum for MACD states """
@@ -24,7 +26,7 @@ class MACD():
         self.long_period = long_period
         self.signal_period = signal_period
 
-    def calculate_ema(self, data, period) -> float:
+    def calculate_ema(self, data: list, period: int) -> float:
         """ Calculate the Exponential Moving Average """
         return data.ewm(span=period, adjust=False).mean()
 
@@ -44,3 +46,14 @@ class MACD():
             return MACD_state.BEARISH
         else:
             return MACD_state.NEUTRAL
+
+    def do_action(self, bot_action: BotAction) -> None:
+        """ Do action """
+        if self.get_macd_state() == MACD_state.BULLISH:
+            print(f'Buy', file=sys.stderr)
+            bot_action.buyAction(0.1)
+        elif self.get_macd_state() == MACD_state.BEARISH:
+            print(f'Sell', file=sys.stderr)
+            bot_action.sellAction(0.1)
+        else:
+            bot_action.passAction()
