@@ -5,6 +5,8 @@ __version__ = "1.0"
 
 import sys
 import math
+from src.RSI import RSI
+from src.BotAction import BotAction
 # from matplotlib import pyplot as plt
 
 PERIOD = 10
@@ -12,6 +14,8 @@ PERIOD = 10
 class Bot:
     def __init__(self):
         self.botState = BotState()
+        self.rsi = RSI(14)
+        self.botAction = BotAction()
 
     def run(self):
         while True:
@@ -36,7 +40,15 @@ class Bot:
             dollars = self.botState.stacks["USDT"]
             current_closing_price = self.botState.charts["USDT_BTC"].closes[-1]
             self.botState.closing_prices.append(current_closing_price)
-
+            # self.rsi.calculate_rsi(self.botState.closing_prices)
+            affordable = dollars / current_closing_price
+            # print(f'My stacks are {dollars}. The current closing price is {current_closing_price}. So I can afford {affordable}', file=sys.stderr)
+            if dollars < 100:
+                self.botAction.passAction()
+            else:
+                self.botAction.buyAction(0.1 * affordable)
+            # print(f"rsi = {self.rsi.rsi[-1]}", file=sys.stderr)
+            
             # affordable = dollars / current_closing_price
             # # print(f'My stacks are {dollars}. The current closing price is {current_closing_price}. So I can afford {affordable}', file=sys.stderr)
             # if dollars < 100:
