@@ -5,7 +5,8 @@
 ## RSI
 ##
 
-import sys
+from src.BotAction import BotAction
+
 class RSI:
     def __init__(self, period):
         """ Constructor """
@@ -53,3 +54,14 @@ class RSI:
                 self.rsi.append(50)
         else:
             self.rsi.append(None)
+
+    def useRSI(self, affordable: float, bitcoin : float, botAction: BotAction) -> bool:
+        if self.rsi[-1] == None:
+            return False
+        if self.rsi[-1] > 70 and bitcoin > 0.001:
+            botAction.sellAction(bitcoin * 0.4)
+            return True
+        if self.rsi[-1] < 30 and affordable > 0.001:
+            botAction.buyAction(affordable * 0.4)
+            return True
+        return False

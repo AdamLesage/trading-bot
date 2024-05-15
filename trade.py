@@ -38,16 +38,21 @@ class Bot:
                 self.botState.update_game(tmp[2], tmp[3])
         if tmp[0] == "action":
             dollars = self.botState.stacks["USDT"]
+            bitcoin = self.botState.stacks["BTC"]
             current_closing_price = self.botState.charts["USDT_BTC"].closes[-1]
             self.botState.closing_prices.append(current_closing_price)
-            # self.rsi.calculate_rsi(self.botState.closing_prices)
+            self.rsi.calculate_rsi(self.botState.closing_prices)
             affordable = dollars / current_closing_price
-            # print(f'My stacks are {dollars}. The current closing price is {current_closing_price}. So I can afford {affordable}', file=sys.stderr)
-            if dollars < 100:
+            
+            print(f'bitcoin {bitcoin} afford {affordable}', file=sys.stderr)            
+            if self.rsi.useRSI(affordable, bitcoin, self.botAction) == False:
                 self.botAction.passAction()
-            else:
-                self.botAction.buyAction(0.1 * affordable)
-            # print(f"rsi = {self.rsi.rsi[-1]}", file=sys.stderr)
+
+            # print(f'My stacks are {dollars}. The current closing price is {current_closing_price}. So I can afford {affordable}', file=sys.stderr)
+            # if dollars < 100:
+            #     self.botAction.passAction()
+            # else:
+            #     self.botAction.buyAction(0.1 * affordable)
             
             # affordable = dollars / current_closing_price
             # # print(f'My stacks are {dollars}. The current closing price is {current_closing_price}. So I can afford {affordable}', file=sys.stderr)
