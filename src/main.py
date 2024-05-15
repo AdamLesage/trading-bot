@@ -5,7 +5,6 @@ __version__ = "1.0"
 
 import sys
 import math
-from MACD import MACD_state, MACD
 # from matplotlib import pyplot as plt
 
 PERIOD = 10
@@ -37,6 +36,14 @@ class Bot:
             dollars = self.botState.stacks["USDT"]
             current_closing_price = self.botState.charts["USDT_BTC"].closes[-1]
             self.botState.closing_prices.append(current_closing_price)
+
+            # affordable = dollars / current_closing_price
+            # # print(f'My stacks are {dollars}. The current closing price is {current_closing_price}. So I can afford {affordable}', file=sys.stderr)
+            # if dollars < 100:
+            #     print("no_moves", flush=True)
+            # else:
+            #     print(f'buy USDT_BTC {0.1 * affordable}', flush=True)
+            # # print(f"stack = {self.botState.stacks}", file=sys.stderr)
 
 
 class Candle:
