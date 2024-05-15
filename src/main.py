@@ -5,6 +5,7 @@ __version__ = "1.0"
 
 import sys
 import math
+from MACD import MACD_state, MACD
 # from matplotlib import pyplot as plt
 
 PERIOD = 10
