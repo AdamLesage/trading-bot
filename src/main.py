@@ -8,7 +8,6 @@ import math
 from MACD import MACD
 from RSI import RSI
 from BotAction import BotAction
-from matplotlib import pyplot as plt
 # from matplotlib import pyplot as plt
 
 PERIOD = 10
