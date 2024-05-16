@@ -7,13 +7,14 @@
 
 import math
 class BollingerBands:
-    def __init__(self, period):
+    def __init__(self, period : int, gap : float):
         """ Constructor """
         self.upper_band = []
         self.lower_band = []
         self.middle_band = []
         self.standard_deviation = []
         self.period = period
+        self.gap = gap
         
     def calculate_moving_average(self, data : list) -> float:
         """ Calculate the moving average """
@@ -34,4 +35,5 @@ class BollingerBands:
         self.middle_band.append(self.calculate_moving_average(data))
         self.standard_deviation.append(self.calculate_bollinger_bands(data))
         if (self.middle_band != None):
-            self.lower_band.append(self.middle_band[-1] - (2 * self.standard_deviation))
+            self.lower_band.append(self.middle_band[-1] - (self.gap * self.standard_deviation))
+            self.upper_band.append(self.middle_band[-1] + (self.gap * self.standard_deviation))
