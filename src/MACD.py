@@ -41,13 +41,14 @@ class MACD():
         """ Calculate MACD """
         short_ema = self.calculate_ema(data, self.short_period)
         long_ema = self.calculate_ema(data, self.long_period)
-        self.macd_line = [short - long for short, long in zip(short_ema, long_ema)]
+        self.macd_line.append(short_ema[-1] - long_ema[-1])
         self.signal_line = self.calculate_ema(self.macd_line, self.signal_period)
-        self.histogram = [macd - signal for macd, signal in zip(self.macd_line, self.signal_line)]
+        # print(f"{self.macd_line[-1]=}, {self.signal_line[-1]=}", file=sys.stderr)
+        self.histogram.append(self.macd_line[-1] - self.signal_line[-1])
 
     def get_macd_state(self) -> MACD_state:
         """ Get MACD state """
-        print(f"{self.epsilon:.6f}", file=sys.stderr)
+        print(f"{self.epsilon:.6f}, {self.histogram[-1]=}", file=sys.stderr)
         if not self.histogram:
             return MACD_state.NEUTRAL
         if self.histogram[-1] > self.epsilon:
@@ -61,11 +62,11 @@ class MACD():
         """ Do action """
         state = self.get_macd_state()
         print(f'{state=}', file=sys.stderr)
-        # if state == MACD_state.BUY:
-        #     print('Buy', file=sys.stderr)
-        #     bot_action.buyAction(0.01)
-        # elif state == MACD_state.SELL:
-        #     print('Sell', file=sys.stderr)
-        #     bot_action.sellAction(0.01)
-        # else:
-        bot_action.passAction()
+        if state == MACD_state.BUY:
+            print('Buy', file=sys.stderr)
+            bot_action.buyAction(0.01)
+        elif state == MACD_state.SELL:
+            print('Sell', file=sys.stderr)
+            bot_action.sellAction(0.01)
+        else:
+            bot_action.passAction()
