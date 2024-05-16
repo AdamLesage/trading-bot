@@ -4,15 +4,10 @@
 ## File description:
 ## MACD
 ##
-from enum import Enum
+
 from BotAction import BotAction
 import sys
-
-class MACD_state(Enum):
-    """ Enum for MACD states """
-    BUY = 1
-    SELL = 2
-    NEUTRAL = 3
+from ActionState import Action_state
 
 class MACD():
     def __init__(self, short_period: int, long_period: int, signal_period: int, epsilon: float = 1e-2):
@@ -46,25 +41,25 @@ class MACD():
         # print(f"{self.macd_line[-1]=}, {self.signal_line[-1]=}", file=sys.stderr)
         self.histogram.append(self.macd_line[-1] - self.signal_line[-1])
 
-    def get_macd_state(self) -> MACD_state:
+    def get_macd_state(self) -> Action_state:
         """ Get MACD state """
-        print(f"{self.epsilon:.6f}, {self.histogram[-1]=}", file=sys.stderr)
+        # print(f"{self.epsilon:.6f}, {self.histogram[-1]=}", file=sys.stderr)
         if not self.histogram:
-            return MACD_state.NEUTRAL
+            return Action_state.NEUTRAL
         if self.histogram[-1] > self.epsilon:
-            return MACD_state.BUY
+            return Action_state.BUY
         elif self.histogram[-1] < -self.epsilon:
-            return MACD_state.SELL
+            return Action_state.SELL
         else:
-            return MACD_state.NEUTRAL
+            return Action_state.NEUTRAL
 
     def do_action(self, bot_action: BotAction, affordable: float, bitcoin: float) -> None:
         """ Do action """
         state = self.get_macd_state()
-        print(f'{state=}', file=sys.stderr)
-        if state == MACD_state.BUY and affordable > 0.001:
+        # print(f'{state=}', file=sys.stderr)
+        if state == Action_state.BUY and affordable > 0.001:
             bot_action.buyAction(affordable * 0.4)
-        elif state == MACD_state.SELL and bitcoin > 0.001:
+        elif state == Action_state.SELL and bitcoin > 0.001:
             bot_action.sellAction(bitcoin * 0.4)
         else:
             bot_action.passAction()

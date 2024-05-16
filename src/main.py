@@ -44,8 +44,8 @@ class Bot:
             affordable = dollars / current_closing_price
             
             # print(f'bitcoin {bitcoin} afford {affordable}', file=sys.stderr)            
-            # if self.rsi.useRSI(affordable, bitcoin, self.botAction) == False:
-            #     self.botAction.passAction()
+            if self.rsi.useRSI(affordable, bitcoin, self.botAction) == False:
+                self.botAction.passAction()
             print(f"{affordable=}, {bitcoin=}", file=sys.stderr)
             self.macd.calculate_macd(self.botState.closing_prices)
             self.macd.do_action(self.botAction, affordable, bitcoin)
