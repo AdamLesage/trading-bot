@@ -5,9 +5,10 @@ __version__ = "1.0"
 
 import sys
 import math
-from MACD import MACD_state, MACD
+from MACD import MACD
 from RSI import RSI
 from BotAction import BotAction
+from matplotlib import pyplot as plt
 # from matplotlib import pyplot as plt
 
 PERIOD = 10
@@ -21,15 +22,12 @@ class Bot:
 
     def run(self):
         while True:
-            try:
-                reading = input()
-                if len(reading) == 0:
-                    continue
-                if reading == "quit":
-                    exit(0)
-                self.parse(reading)
-            except EOFError:
+            reading = input()
+            if len(reading) == 0:
+                continue
+            if reading == "quit":
                 exit(0)
+            self.parse(reading)
 
     def parse(self, info: str):
         tmp = info.split(" ")
