@@ -58,15 +58,13 @@ class MACD():
         else:
             return MACD_state.NEUTRAL
 
-    def do_action(self, bot_action: BotAction) -> None:
+    def do_action(self, bot_action: BotAction, affordable: float, bitcoin: float) -> None:
         """ Do action """
         state = self.get_macd_state()
         print(f'{state=}', file=sys.stderr)
-        if state == MACD_state.BUY:
-            print('Buy', file=sys.stderr)
-            bot_action.buyAction(0.01)
-        elif state == MACD_state.SELL:
-            print('Sell', file=sys.stderr)
-            bot_action.sellAction(0.01)
+        if state == MACD_state.BUY and affordable > 0.001:
+            bot_action.buyAction(affordable * 0.4)
+        elif state == MACD_state.SELL and bitcoin > 0.001:
+            bot_action.sellAction(bitcoin * 0.4)
         else:
             bot_action.passAction()

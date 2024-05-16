@@ -37,12 +37,14 @@ class Bot:
                 self.botState.update_game(tmp[2], tmp[3])
         if tmp[0] == "action":
             dollars = self.botState.stacks["USDT"]
+            bitcoin = self.botState.stacks["BTC"]
             current_closing_price = self.botState.charts["USDT_BTC"].closes[-1]
             self.botState.closing_prices.append(current_closing_price)
             # self.rsi.calculate_rsi(self.botState.closing_prices)
-            self.macd.calculate_macd(self.botState.closing_prices)
-            self.macd.do_action(self.botAction)
             affordable = dollars / current_closing_price
+            print(f"{affordable=}, {bitcoin=}", file=sys.stderr)
+            self.macd.calculate_macd(self.botState.closing_prices)
+            self.macd.do_action(self.botAction, affordable, bitcoin)
             # if dollars < 100:
             #     self.botAction.passAction()
             # else:
