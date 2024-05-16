@@ -5,8 +5,9 @@ __version__ = "1.0"
 
 import sys
 import math
-from src.RSI import RSI
-from src.BotAction import BotAction
+from MACD import MACD
+from RSI import RSI
+from BotAction import BotAction
 # from matplotlib import pyplot as plt
 
 PERIOD = 10
@@ -16,18 +17,16 @@ class Bot:
         self.botState = BotState()
         self.rsi = RSI(14)
         self.botAction = BotAction()
+        self.macd = MACD(12, 26, 9)
 
     def run(self):
         while True:
-            try:
-                reading = input()
-                if len(reading) == 0:
-                    continue
-                if reading == "quit":
-                    exit(0)
-                self.parse(reading)
-            except EOFError:
+            reading = input()
+            if len(reading) == 0:
+                continue
+            if reading == "quit":
                 exit(0)
+            self.parse(reading)
 
     def parse(self, info: str):
         tmp = info.split(" ")
@@ -44,23 +43,16 @@ class Bot:
             self.rsi.calculate_rsi(self.botState.closing_prices)
             affordable = dollars / current_closing_price
             
-            print(f'bitcoin {bitcoin} afford {affordable}', file=sys.stderr)            
-            if self.rsi.useRSI(affordable, bitcoin, self.botAction) == False:
-                self.botAction.passAction()
-
-            # print(f'My stacks are {dollars}. The current closing price is {current_closing_price}. So I can afford {affordable}', file=sys.stderr)
+            # print(f'bitcoin {bitcoin} afford {affordable}', file=sys.stderr)            
+            # if self.rsi.useRSI(affordable, bitcoin, self.botAction) == False:
+            #     self.botAction.passAction()
+            print(f"{affordable=}, {bitcoin=}", file=sys.stderr)
+            self.macd.calculate_macd(self.botState.closing_prices)
+            self.macd.do_action(self.botAction, affordable, bitcoin)
             # if dollars < 100:
             #     self.botAction.passAction()
             # else:
             #     self.botAction.buyAction(0.1 * affordable)
-            
-            # affordable = dollars / current_closing_price
-            # # print(f'My stacks are {dollars}. The current closing price is {current_closing_price}. So I can afford {affordable}', file=sys.stderr)
-            # if dollars < 100:
-            #     print("no_moves", flush=True)
-            # else:
-            #     print(f'buy USDT_BTC {0.1 * affordable}', flush=True)
-            # # print(f"stack = {self.botState.stacks}", file=sys.stderr)
 
 
 class Candle:

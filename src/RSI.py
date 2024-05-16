@@ -5,7 +5,7 @@
 ## RSI
 ##
 
-from src.BotAction import BotAction
+from BotAction import BotAction
 
 class RSI:
     def __init__(self, period):
