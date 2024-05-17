@@ -24,7 +24,7 @@ class RSI:
         MME = 0.0
         k = 0.0
         k = 2 / (1 + self.period)
-        if exp_moving_average[-1] != None:
+        if len(exp_moving_average) > 1 and exp_moving_average[-1] != None:
             MME = value * k + exp_moving_average[-1] * (1 - k)
         else:
             MME = value * k + value * (1 - k)
@@ -59,11 +59,23 @@ class RSI:
     def get_rsi_state(self, affordable: float, bitcoin : float, botAction: BotAction) -> Action_state:
         if len(self.rsi) == 0:
             return Action_state.NEUTRAL
-
         if self.rsi[-1] == None:
             return Action_state.NEUTRAL
+        last_overbought = self.overbought
+        last_oversold = self.oversold
+
         if self.rsi[-1] > 70 and bitcoin > 0.001:
-            return Action_state.SELL
+            self.overbought = True
+        else:
+            self.overbought = False
+
         if self.rsi[-1] < 30 and affordable > 0.001:
+            self.oversold = True
+        else:
+            self.oversold = False
+
+        if last_oversold == True and self.oversold == False and self.rsi[-1] > 30 and affordable > 0.001:
             return Action_state.BUY
+        if last_overbought == True and self.overbought == False and self.rsi[-1] < 70 and bitcoin > 0.001:
+            return Action_state.SELL
         return Action_state.NEUTRAL
