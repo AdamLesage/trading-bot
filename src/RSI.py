@@ -6,6 +6,7 @@
 ##
 
 from BotAction import BotAction
+from ActionState import Action_state
 
 class RSI:
     def __init__(self, period):
@@ -42,8 +43,8 @@ class RSI:
             self.gain.append(0)
             self.loss.append(0)
         if len(self.gain) > self.period:
-            self.H.append(sum(self.gain[-self.period:]) / self.period)
-            self.A.append(sum(self.loss[-self.period:]) / self.period)
+            self.H.append(sum(self.gain[-(self.period):]) / self.period)
+            self.A.append(sum(self.loss[-(self.period):]) / self.period)
         else:
             self.H.append(None)
             self.A.append(None)
@@ -55,13 +56,14 @@ class RSI:
         else:
             self.rsi.append(None)
 
-    def useRSI(self, affordable: float, bitcoin : float, botAction: BotAction) -> bool:
+    def get_rsi_state(self, affordable: float, bitcoin : float, botAction: BotAction) -> Action_state:
+        if len(self.rsi) == 0:
+            return Action_state.NEUTRAL
+
         if self.rsi[-1] == None:
-            return False
+            return Action_state.NEUTRAL
         if self.rsi[-1] > 70 and bitcoin > 0.001:
-            botAction.sellAction(bitcoin * 0.4)
-            return True
+            return Action_state.SELL
         if self.rsi[-1] < 30 and affordable > 0.001:
-            botAction.buyAction(affordable * 0.4)
-            return True
-        return False
+            return Action_state.BUY
+        return Action_state.NEUTRAL

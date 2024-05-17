@@ -4,13 +4,11 @@
 __version__ = "1.0"
 
 import sys
-import math
 from MACD import MACD
 from RSI import RSI
 from BotAction import BotAction
+from ActionState import Action_state
 # from matplotlib import pyplot as plt
-
-PERIOD = 10
 
 class Bot:
     def __init__(self):
@@ -41,18 +39,20 @@ class Bot:
             current_closing_price = self.botState.charts["USDT_BTC"].closes[-1]
             self.botState.closing_prices.append(current_closing_price)
             self.rsi.calculate_rsi(self.botState.closing_prices)
+            self.macd.calculate_macd(self.botState.closing_prices)
             affordable = dollars / current_closing_price
             
-            # print(f'bitcoin {bitcoin} afford {affordable}', file=sys.stderr)            
-            # if self.rsi.useRSI(affordable, bitcoin, self.botAction) == False:
-            #     self.botAction.passAction()
-            print(f"{affordable=}, {bitcoin=}", file=sys.stderr)
-            self.macd.calculate_macd(self.botState.closing_prices)
-            self.macd.do_action(self.botAction, affordable, bitcoin)
-            # if dollars < 100:
-            #     self.botAction.passAction()
-            # else:
-            #     self.botAction.buyAction(0.1 * affordable)
+            # print(f'bitcoin {bitcoin} afford {affordable}', file=sys.stderr)
+            if self.macd.get_macd_state(affordable, bitcoin) == Action_state.BUY and self.rsi.get_rsi_state(affordable, bitcoin, self.botAction) == Action_state.BUY:
+                # print(f"buy {0.4 * affordable} at {current_closing_price}")
+                self.botAction.buyAction(0.4 * affordable)
+            elif self.macd.get_macd_state(affordable, bitcoin) == Action_state.SELL and self.rsi.get_rsi_state(affordable, bitcoin, self.botAction) == Action_state.SELL:
+                # print(f"sell {0.4 * bitcoin} at {current_closing_price}")
+                self.botAction.sellAction(0.4 * bitcoin)
+            else:
+                self.botAction.passAction()
+
+            # print(f"{affordable=}, {bitcoin=}", file=sys.stderr)
 
 
 class Candle:

@@ -4,18 +4,13 @@
 ## File description:
 ## MACD
 ##
-from enum import Enum
+
 from BotAction import BotAction
 import sys
-
-class MACD_state(Enum):
-    """ Enum for MACD states """
-    BUY = 1
-    SELL = 2
-    NEUTRAL = 3
+from ActionState import Action_state
 
 class MACD():
-    def __init__(self, short_period: int, long_period: int, signal_period: int, epsilon: float = 1e-2):
+    def __init__(self, short_period: int, long_period: int, signal_period: int, epsilon: float = 1e-5):
         """ Constructor """
         self.short_period = short_period
         self.long_period = long_period
@@ -38,33 +33,45 @@ class MACD():
         return self.ewm(data, period)
 
     def calculate_macd(self, data: list) -> None:
-        """ Calculate MACD """
+        """Calculate MACD"""
+        if len(data) < self.long_period:
+            self.signal_line.extend([None] * len(data))
+            self.histogram.extend([None] * len(data))
+            return
+
         short_ema = self.calculate_ema(data, self.short_period)
         long_ema = self.calculate_ema(data, self.long_period)
-        self.macd_line.append(short_ema[-1] - long_ema[-1])
-        self.signal_line = self.calculate_ema(self.macd_line, self.signal_period)
-        # print(f"{self.macd_line[-1]=}, {self.signal_line[-1]=}", file=sys.stderr)
-        self.histogram.append(self.macd_line[-1] - self.signal_line[-1])
 
-    def get_macd_state(self) -> MACD_state:
+        for i in range(len(long_ema)):
+            if i + self.long_period - self.short_period >= len(short_ema):
+                break
+            macd_value = long_ema[i] - short_ema[i + self.long_period - self.short_period]
+            self.macd_line.append(macd_value)
+
+        # Calculate the signal line
+        if len(self.macd_line) >= self.signal_period:
+            signal_ema = self.calculate_ema(self.macd_line, self.signal_period)
+            self.signal_line = signal_ema
+
+            for i in range(len(signal_ema)):
+                if i + self.signal_period - 1 >= len(self.macd_line):
+                    break
+                self.histogram.append(self.macd_line[i + self.signal_period - 1] - self.signal_line[i])
+        else:
+            # Append None if not enough data to calculate signal line and histogram
+            self.signal_line.extend([None] * (len(self.macd_line) - len(self.signal_line)))
+            self.histogram.extend([None] * (len(self.macd_line) - len(self.histogram)))
+
+
+    def get_macd_state(self, affordable: float, bitcoin: float) -> Action_state:
         """ Get MACD state """
-        print(f"{self.epsilon:.6f}, {self.histogram[-1]=}", file=sys.stderr)
-        if not self.histogram:
-            return MACD_state.NEUTRAL
-        if self.histogram[-1] > self.epsilon:
-            return MACD_state.BUY
-        elif self.histogram[-1] < -self.epsilon:
-            return MACD_state.SELL
-        else:
-            return MACD_state.NEUTRAL
+        # print(f"{self.epsilon:.6f}, {self.histogram[-1]=}", file=sys.stderr)
+        if not self.histogram or self.histogram[-1] == None: # If histogram is empty or None
+            return Action_state.NEUTRAL
 
-    def do_action(self, bot_action: BotAction, affordable: float, bitcoin: float) -> None:
-        """ Do action """
-        state = self.get_macd_state()
-        print(f'{state=}', file=sys.stderr)
-        if state == MACD_state.BUY and affordable > 0.001:
-            bot_action.buyAction(affordable * 0.4)
-        elif state == MACD_state.SELL and bitcoin > 0.001:
-            bot_action.sellAction(bitcoin * 0.4)
+        if self.histogram[-1] > self.epsilon and affordable > 0.001:
+            return Action_state.BUY
+        elif self.histogram[-1] < -self.epsilon and bitcoin > 0.001:
+            return Action_state.SELL
         else:
-            bot_action.passAction()
+            return Action_state.NEUTRAL
