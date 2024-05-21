@@ -41,14 +41,13 @@ class Bot:
             self.rsi.calculate_rsi(self.botState.closing_prices)
             self.macd.calculate_macd(self.botState.closing_prices)
             affordable = dollars / current_closing_price
-            
-            # print(f'bitcoin {bitcoin} afford {affordable}', file=sys.stderr)
+
             if self.macd.get_macd_state(affordable, bitcoin) == Action_state.BUY and self.rsi.get_rsi_state(affordable, bitcoin, self.botAction) == Action_state.BUY:
-                # print(f"buy {0.4 * affordable} at {current_closing_price}")
-                self.botAction.buyAction(0.4 * affordable)
+                self.botAction.buyAction(self.botState.closing_prices, affordable, bitcoin)
+                # self.botAction.passAction()
             elif self.macd.get_macd_state(affordable, bitcoin) == Action_state.SELL and self.rsi.get_rsi_state(affordable, bitcoin, self.botAction) == Action_state.SELL:
-                # print(f"sell {0.4 * bitcoin} at {current_closing_price}")
-                self.botAction.sellAction(0.4 * bitcoin)
+                self.botAction.sellAction(self.botState.closing_prices, bitcoin)
+                # self.botAction.passAction()
             else:
                 self.botAction.passAction()
 
