@@ -35,8 +35,8 @@ class BotAction:
         standard_deviation = (sum([(x - mean_close) ** 2 for x in closing_prices]) / len(closing_prices)) ** 0.5
         if closing_prices[-1] < mean_close - standard_deviation: # current price is below the mean - standard deviation so sell less
             to_sell = 0.2 * bitcoin
-        elif closing_prices[-1] > mean_close + standard_deviation: # current price is above the mean + standard deviation so sell everything
-            to_sell = bitcoin
+        elif closing_prices[-1] > mean_close + standard_deviation: # current price is above the mean + standard deviation so sell more
+            to_sell = 3 * bitcoin
         elif closing_prices[-1] < mean_close: # current price is below the mean so sell less
             to_sell = 0.4 * bitcoin
         else: # current price is above the mean so sell more
