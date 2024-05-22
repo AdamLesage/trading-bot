@@ -61,11 +61,12 @@ class Bot:
 
             if macd_state == Action_state.BUY and rsi_state == Action_state.BUY:
                 self.botAction.buyAction(self.botState.closing_prices, affordable, bitcoin)
+                return
             elif macd_state == Action_state.SELL and rsi_state == Action_state.SELL:
                 self.botAction.sellAction(self.botState.closing_prices, bitcoin)
-
-            print(f"{macd_state=}, {rsi_state=}", file=sys.stderr)
+                return
             self.botAction.passAction()
+            print(f"{macd_state=}, {rsi_state=}", file=sys.stderr)
 
 
 class Candle:
