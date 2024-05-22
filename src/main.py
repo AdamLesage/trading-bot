@@ -8,6 +8,7 @@ from MACD import MACD
 from RSI import RSI
 from BotAction import BotAction
 from ActionState import Action_state
+from Limit import Limit
 # from matplotlib import pyplot as plt
 
 class Bot:
@@ -16,6 +17,7 @@ class Bot:
         self.rsi = RSI(14)
         self.botAction = BotAction()
         self.macd = MACD(12, 26, 9)
+        self.limit = Limit(1.1, 0.95)
 
     def run(self):
         while True:
@@ -42,15 +44,36 @@ class Bot:
             self.macd.calculate_macd(self.botState.closing_prices)
             affordable = dollars / current_closing_price
             
-            # print(f'bitcoin {bitcoin} afford {affordable}', file=sys.stderr)
-            if self.macd.get_macd_state(affordable, bitcoin) == Action_state.BUY and self.rsi.get_rsi_state(affordable, bitcoin, self.botAction) == Action_state.BUY:
-                # print(f"buy {0.4 * affordable} at {current_closing_price}")
-                self.botAction.buyAction(0.4 * affordable)
-            elif self.macd.get_macd_state(affordable, bitcoin) == Action_state.SELL and self.rsi.get_rsi_state(affordable, bitcoin, self.botAction) == Action_state.SELL:
-                # print(f"sell {0.4 * bitcoin} at {current_closing_price}")
-                self.botAction.sellAction(0.4 * bitcoin)
+            if self.limit.loss_limit(self.botState.closing_prices[-1]) == True:
+                if bitcoin > 0.001:
+                    self.botAction.sellAction(bitcoin)
+                    self.limit.update_sell()
+                    return
+                else:
+                    self.botAction.passAction()
+
+            if len(self.botState.closing_prices) < 24:
+                if self.rsi.get_rsi_state(affordable, bitcoin, self.botAction) == Action_state.BUY:
+                    # print(f"buy {0.4 * affordable} at {current_closing_price}")
+                    self.botAction.buyAction(0.8 * affordable)
+                    self.limit.update_limit_buy(self.botState.closing_prices[-1])
+                elif self.rsi.get_rsi_state(affordable, bitcoin, self.botAction) == Action_state.SELL:
+                    # print(f"sell {0.4 * bitcoin} at {current_closing_price}")
+                    self.botAction.sellAction(0.8 * bitcoin)
+                    self.limit.update_sell()
+                else:
+                    self.botAction.passAction()
             else:
-                self.botAction.passAction()
+                if self.macd.get_macd_state(affordable, bitcoin) == Action_state.BUY and self.rsi.get_rsi_state(affordable, bitcoin, self.botAction) == Action_state.BUY:
+                    # print(f"buy {0.4 * affordable} at {current_closing_price}")
+                    self.botAction.buyAction(0.8 * affordable)
+                    self.limit.update_limit_buy(self.botState.closing_prices[-1])
+                elif self.macd.get_macd_state(affordable, bitcoin) == Action_state.SELL and self.rsi.get_rsi_state(affordable, bitcoin, self.botAction) == Action_state.SELL:
+                    # print(f"sell {0.4 * bitcoin} at {current_closing_price}")
+                    self.botAction.sellAction(0.8 * bitcoin)
+                    self.limit.update_sell()
+                else:
+                    self.botAction.passAction()
 
             # print(f"{affordable=}, {bitcoin=}", file=sys.stderr)
 
