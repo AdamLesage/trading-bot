@@ -5,42 +5,73 @@
 ## MACD
 ##
 
-from enum import Enum
-
-class MACD_state(Enum):
-    """ Enum for MACD states """
-    BULLISH = 1
-    BEARISH = 2
-    NEUTRAL = 3
+from BotAction import BotAction
+import sys
+from ActionState import Action_state
 
 class MACD():
-    def __init__(self, short_period: int, long_period: int, signal_period: int):
+    def __init__(self, short_period: int, long_period: int, signal_period: int, epsilon: float = 1e-5):
         """ Constructor """
-        self.emas = []
-        self.macd_line = []
-        self.signal_line = []
-        self.histogram = []
         self.short_period = short_period
         self.long_period = long_period
         self.signal_period = signal_period
+        self.epsilon = epsilon
+        self.macd_line = []
+        self.signal_line = []
+        self.histogram = []
 
-    def calculate_ema(self, data, period) -> float:
+    def ewm(self, data: list, span: int) -> list:
+        """ Exponential Weighted Moving Average """
+        weight = 2 / (span + 1)
+        ema = [data[0]]
+        for i in range(1, len(data)):
+            ema.append(data[i] * weight + ema[i - 1] * (1 - weight))
+        return ema
+
+    def calculate_ema(self, data: list, period: int) -> list:
         """ Calculate the Exponential Moving Average """
-        return data.ewm(span=period, adjust=False).mean()
+        return self.ewm(data, period)
 
     def calculate_macd(self, data: list) -> None:
-        """ Calculate MACD """
-        self.emas.append(self.calculate_ema(data, self.short_period))
-        self.emas.append(self.calculate_ema(data, self.long_period))
-        self.macd_line = self.emas[0] - self.emas[1]
-        self.signal_line = self.calculate_ema(self.macd_line, 9)
-        self.histogram = self.macd_line - self.signal_line
+        """Calculate MACD"""
+        if len(data) < self.long_period:
+            self.signal_line.extend([None] * len(data))
+            self.histogram.extend([None] * len(data))
+            return
 
-    def get_macd_state(self) -> MACD_state:
-        """ Get MACD state """
-        if self.histogram[-1] > 0:
-            return MACD_state.BULLISH
-        elif self.histogram[-1] < 0:
-            return MACD_state.BEARISH
+        short_ema = self.calculate_ema(data, self.short_period)
+        long_ema = self.calculate_ema(data, self.long_period)
+
+        for i in range(len(long_ema)):
+            if i + self.long_period - self.short_period >= len(short_ema):
+                break
+            macd_value = long_ema[i] - short_ema[i + self.long_period - self.short_period]
+            self.macd_line.append(macd_value)
+
+        # Calculate the signal line
+        if len(self.macd_line) >= self.signal_period:
+            signal_ema = self.calculate_ema(self.macd_line, self.signal_period)
+            self.signal_line = signal_ema
+
+            for i in range(len(signal_ema)):
+                if i + self.signal_period - 1 >= len(self.macd_line):
+                    break
+                self.histogram.append(self.macd_line[i + self.signal_period - 1] - self.signal_line[i])
         else:
-            return MACD_state.NEUTRAL
+            # Append None if not enough data to calculate signal line and histogram
+            self.signal_line.extend([None] * (len(self.macd_line) - len(self.signal_line)))
+            self.histogram.extend([None] * (len(self.macd_line) - len(self.histogram)))
+
+
+    def get_macd_state(self, affordable: float, bitcoin: float) -> Action_state:
+        """ Get MACD state """
+        # print(f"{self.epsilon:.6f}, {self.histogram[-1]=}", file=sys.stderr)
+        if not self.histogram or self.histogram[-1] == None: # If histogram is empty or None
+            return Action_state.NEUTRAL
+
+        if self.histogram[-1] > self.epsilon and affordable > 0.001:
+            return Action_state.BUY
+        elif self.histogram[-1] < -self.epsilon and bitcoin > 0.001:
+            return Action_state.SELL
+        else:
+            return Action_state.NEUTRAL
