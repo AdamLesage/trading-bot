@@ -12,3 +12,4 @@ class Action_state(Enum):
     BUY = 1
     SELL = 2
     NEUTRAL = 3
+    CALCULATING = 4
