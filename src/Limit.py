@@ -18,8 +18,8 @@ class Limit:
             return False
         if value < self.last_buy[-1] * self.Loss and self.buy == True:
             return True
-        # elif value > self.last_buy[-1] * self.Gain and self.buy == True:
-            # return True
+        elif value > self.last_buy[-1] * self.Gain and self.buy == True:
+            return True
         else:
             return False
 
