@@ -6,6 +6,7 @@ __version__ = "1.0"
 import sys
 from MACD import MACD
 from RSI import RSI
+from BollingerBands import BollingerBands
 from BotAction import BotAction
 from ActionState import Action_state
 # from matplotlib import pyplot as plt
@@ -16,6 +17,7 @@ class Bot:
         self.rsi = RSI(14)
         self.botAction = BotAction()
         self.macd = MACD(12, 26, 9)
+        self.bollinger_bands = BollingerBands(20, 2)
 
     def run(self):
         while True:
@@ -40,19 +42,27 @@ class Bot:
             self.botState.closing_prices.append(current_closing_price)
             self.rsi.calculate_rsi(self.botState.closing_prices)
             self.macd.calculate_macd(self.botState.closing_prices)
+            self.bollinger_bands.calculate_bollinger_bands(self.botState.closing_prices)
             affordable = dollars / current_closing_price
-            
-            # print(f'bitcoin {bitcoin} afford {affordable}', file=sys.stderr)
-            if self.macd.get_macd_state(affordable, bitcoin) == Action_state.BUY and self.rsi.get_rsi_state(affordable, bitcoin, self.botAction) == Action_state.BUY:
-                # print(f"buy {0.4 * affordable} at {current_closing_price}")
+
+            macd_state = self.macd.get_macd_state(affordable, bitcoin)
+            rsi_state = self.rsi.get_rsi_state(affordable, bitcoin, self.botAction)
+            bollinger_state = self.bollinger_bands.get_bollinger_state(current_closing_price)
+            print(f"{bollinger_state=}", file=sys.stderr)
+
+            # if macd_state == Action_state.BUY and rsi_state == Action_state.BUY:
+            #     self.botAction.buyAction(0.4 * affordable)
+            # elif macd_state == Action_state.SELL and rsi_state == Action_state.SELL:
+            #     self.botAction.sellAction(0.4 * bitcoin)
+            # else:
+            #     self.botAction.passAction()
+
+            if bollinger_state == Action_state.BUY:
                 self.botAction.buyAction(0.4 * affordable)
-            elif self.macd.get_macd_state(affordable, bitcoin) == Action_state.SELL and self.rsi.get_rsi_state(affordable, bitcoin, self.botAction) == Action_state.SELL:
-                # print(f"sell {0.4 * bitcoin} at {current_closing_price}")
+            elif bollinger_state == Action_state.SELL:
                 self.botAction.sellAction(0.4 * bitcoin)
             else:
                 self.botAction.passAction()
-
-            # print(f"{affordable=}, {bitcoin=}", file=sys.stderr)
 
 
 class Candle:
