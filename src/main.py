@@ -13,9 +13,9 @@ from ActionState import Action_state
 class Bot:
     def __init__(self):
         self.botState = BotState()
-        self.rsi = RSI(14)
+        self.rsi = RSI(9)
         self.botAction = BotAction()
-        self.macd = MACD(12, 26, 9)
+        self.macd = MACD(4, 9, 5)
 
     def run(self):
         while True:
@@ -38,22 +38,22 @@ class Bot:
             bitcoin = self.botState.stacks["BTC"]
             current_closing_price = self.botState.charts["USDT_BTC"].closes[-1]
             self.botState.closing_prices.append(current_closing_price)
+
             self.rsi.calculate_rsi(self.botState.closing_prices)
             self.macd.calculate_macd(self.botState.closing_prices)
+
             affordable = dollars / current_closing_price
-            
-            # print(f'bitcoin {bitcoin} afford {affordable}', file=sys.stderr)
-            if self.macd.get_macd_state(affordable, bitcoin) == Action_state.BUY and self.rsi.get_rsi_state(affordable, bitcoin, self.botAction) == Action_state.BUY:
-                # print(f"buy {0.4 * affordable} at {current_closing_price}")
-                self.botAction.buyAction(0.4 * affordable)
-            elif self.macd.get_macd_state(affordable, bitcoin) == Action_state.SELL and self.rsi.get_rsi_state(affordable, bitcoin, self.botAction) == Action_state.SELL:
-                # print(f"sell {0.4 * bitcoin} at {current_closing_price}")
-                self.botAction.sellAction(0.4 * bitcoin)
+
+            macd_state = self.macd.get_macd_state(affordable, bitcoin)
+            rsi_state = self.rsi.get_rsi_state(affordable, bitcoin, self.botAction)
+            print(f"{macd_state=}, {rsi_state=}", file=sys.stderr)
+
+            if macd_state == Action_state.BUY and rsi_state == Action_state.BUY:
+                self.botAction.buyAction(self.botState.closing_prices, affordable, bitcoin)
+            elif macd_state == Action_state.SELL and rsi_state == Action_state.SELL:
+                self.botAction.sellAction(self.botState.closing_prices, bitcoin)
             else:
                 self.botAction.passAction()
-
-            # print(f"{affordable=}, {bitcoin=}", file=sys.stderr)
-
 
 class Candle:
     def __init__(self, format, intel):

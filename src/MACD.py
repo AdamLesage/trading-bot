@@ -67,7 +67,7 @@ class MACD():
         """ Get MACD state """
         # print(f"{self.epsilon:.6f}, {self.histogram[-1]=}", file=sys.stderr)
         if not self.histogram or self.histogram[-1] == None: # If histogram is empty or None
-            return Action_state.NEUTRAL
+            return Action_state.CALCULATING
 
         if self.histogram[-1] > self.epsilon and affordable > 0.001:
             return Action_state.BUY
