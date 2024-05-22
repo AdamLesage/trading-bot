@@ -6,6 +6,7 @@ __version__ = "1.0"
 import sys
 from MACD import MACD
 from RSI import RSI
+from BollingerBands import BollingerBands
 from BotAction import BotAction
 from ActionState import Action_state
 # from matplotlib import pyplot as plt
@@ -15,6 +16,8 @@ class Bot:
         self.botState = BotState()
         self.rsi = RSI(9)
         self.botAction = BotAction()
+        self.macd = MACD(12, 26, 9)
+        self.bollinger_bands = BollingerBands(20, 2)
         self.macd = MACD(4, 9, 5)
 
     def run(self):
@@ -41,19 +44,30 @@ class Bot:
 
             self.rsi.calculate_rsi(self.botState.closing_prices)
             self.macd.calculate_macd(self.botState.closing_prices)
-
+            self.bollinger_bands.calculate_bollinger_bands(self.botState.closing_prices)
             affordable = dollars / current_closing_price
 
             macd_state = self.macd.get_macd_state(affordable, bitcoin)
             rsi_state = self.rsi.get_rsi_state(affordable, bitcoin, self.botAction)
-            print(f"{macd_state=}, {rsi_state=}", file=sys.stderr)
+            bollinger_state = self.bollinger_bands.get_bollinger_state(current_closing_price)
+            print(f"{bollinger_state=}", file=sys.stderr)
+
+            if bollinger_state == Action_state.BUY:
+                self.botAction.buyAction(self.botState.closing_prices, affordable, bitcoin)
+                return
+            elif bollinger_state == Action_state.SELL:
+                self.botAction.sellAction(self.botState.closing_prices, bitcoin)
+                return
 
             if macd_state == Action_state.BUY and rsi_state == Action_state.BUY:
                 self.botAction.buyAction(self.botState.closing_prices, affordable, bitcoin)
+                return
             elif macd_state == Action_state.SELL and rsi_state == Action_state.SELL:
                 self.botAction.sellAction(self.botState.closing_prices, bitcoin)
-            else:
-                self.botAction.passAction()
+                return
+            self.botAction.passAction()
+            print(f"{macd_state=}, {rsi_state=}", file=sys.stderr)
+
 
 class Candle:
     def __init__(self, format, intel):
