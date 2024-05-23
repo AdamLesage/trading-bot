@@ -19,6 +19,8 @@ class MACD():
         self.macd_line = []
         self.signal_line = []
         self.histogram = []
+        self.short_emas = []
+        self.long_emas = []
 
     def ewm(self, data: list, span: int) -> list:
         """ Exponential Weighted Moving Average """
@@ -39,13 +41,13 @@ class MACD():
             self.histogram.extend([None] * len(data))
             return
 
-        short_ema = self.calculate_ema(data, self.short_period)
-        long_ema = self.calculate_ema(data, self.long_period)
+        self.short_emas = self.calculate_ema(data, self.short_period)
+        self.long_emas = self.calculate_ema(data, self.long_period)
 
-        for i in range(len(long_ema)):
-            if i + self.long_period - self.short_period >= len(short_ema):
+        for i in range(len(self.long_emas)):
+            if i + self.long_period - self.short_period >= len(self.short_emas):
                 break
-            macd_value = long_ema[i] - short_ema[i + self.long_period - self.short_period]
+            macd_value = self.long_emas[i] - self.short_emas[i + self.long_period - self.short_period]
             self.macd_line.append(macd_value)
 
         # Calculate the signal line
@@ -69,9 +71,8 @@ class MACD():
         if not self.histogram or self.histogram[-1] == None: # If histogram is empty or None
             return Action_state.CALCULATING
 
-        if self.histogram[-1] > self.epsilon and affordable > 0.001:
+        if self.short_emas[-1] > self.long_emas[-1] and self.short_emas[-2] < self.long_emas[-2]: # If MACD line crosses signal line and should buy
             return Action_state.BUY
-        elif self.histogram[-1] < -self.epsilon and bitcoin > 0.001:
+        if self.short_emas[-1] < self.long_emas[-1] and self.short_emas[-2] > self.long_emas[-2]: # If MACD line crosses signal line and should sell
             return Action_state.SELL
-        else:
-            return Action_state.NEUTRAL
+        return Action_state.NEUTRAL

@@ -62,8 +62,8 @@ class RSI:
 
         if self.rsi[-1] == None:
             return Action_state.CALCULATING
-        if self.rsi[-1] > 70 and bitcoin > 0.001:
+        if self.rsi[-1] > 60 and bitcoin > 0.001:
             return Action_state.SELL
-        if self.rsi[-1] < 30 and affordable > 0.001:
+        if self.rsi[-1] < 40 and affordable > 0.001:
             return Action_state.BUY
         return Action_state.NEUTRAL

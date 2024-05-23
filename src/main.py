@@ -13,10 +13,10 @@ from Limit import Limit
 class Bot:
     def __init__(self):
         self.botState = BotState()
-        self.rsi = RSI(12)
+        self.rsi = RSI(13)
         self.botAction = BotAction()
-        self.macd = MACD(6, 12, 9)
-        self.limit = Limit(1., 0.95)
+        self.macd = MACD(6, 13, 9)
+        self.limit = Limit(1.2, 0.95)
 
     def run(self):
         while True:
@@ -47,18 +47,22 @@ class Bot:
             rsi_state = self.rsi.get_rsi_state(affordable, bitcoin, self.botAction)
             # bollinger_state = self.limit.get_bollinger_state(self.botState.closing_prices[-1])
 
-            if self.limit.loss_limit(self.botState.closing_prices[-1]) == True:
+            if self.limit.loss_limit(self.botState.closing_prices[-1]):
                 if bitcoin > 0.001:
                     self.botAction.sellAction(self.botState.closing_prices, bitcoin)
                     self.limit.update_sell()
                     return
                 else:
                     self.botAction.passAction()
+                    return
 
-            if macd_state == Action_state.BUY and rsi_state == Action_state.BUY:
+            if macd_state != Action_state.CALCULATING and macd_state != Action_state.NEUTRAL:
+                print(f"RSI indicator: {rsi_state}, current closing price: {current_closing_price}, MACD indicator: {macd_state}", file=sys.stderr)
+
+            if rsi_state == Action_state.BUY and macd_state == Action_state.BUY:
                 self.botAction.buyAction(self.botState.closing_prices, affordable, bitcoin)
                 self.limit.update_limit_buy(self.botState.closing_prices[-1])
-            elif macd_state == Action_state.SELL and rsi_state == Action_state.SELL:
+            elif rsi_state == Action_state.SELL and macd_state == Action_state.SELL:
                 self.botAction.sellAction(self.botState.closing_prices, bitcoin)
                 self.limit.update_sell()
             else:
