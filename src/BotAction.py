@@ -5,9 +5,12 @@
 ## Action
 ##
 
+import sys
+
 class BotAction:
     def __init__(self):
-        pass
+        """Constructor"""
+        self.sold_everything = False
 
     def passAction(self) -> None:
         """Prints no_moves to stdout"""
@@ -60,3 +63,17 @@ class BotAction:
             self.passAction()
             return
         print(f"buy USDT_BTC {value}", flush=True)
+
+    def sellEverything(self, bitcoin: float, dollars: float, current_closing_price: float) -> bool:
+        """Sell all bitcoin"""
+        if self.sold_everything == True:
+            self.passAction()
+            print(f"Already sold everything {bitcoin=}", file=sys.stderr)
+            return True
+        print(f"{dollars=}, {bitcoin=} current total value: {dollars + bitcoin * current_closing_price}", file=sys.stderr)
+        if dollars + bitcoin * current_closing_price > 1450:
+            print(f"SELL EVERYTHING", file=sys.stderr)
+            print(f"sell USDT_BTC {bitcoin}", flush=True)
+            self.sold_everything = True
+            return True
+        return False
