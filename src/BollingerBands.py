@@ -55,7 +55,7 @@ class BollingerBands:
 
     def get_bollinger_state(self, current_closing_price: float) -> Action_state:
         """ Indicator Bollinger Bands """
-        if (len(self.upper_band) < self.period or len(self.lower_band) < self.period) or (self.upper_band[-1] is None or self.lower_band[-1] is None):
+        if (len(self.upper_band) < self.period or len(self.lower_band) < self.period):
             return Action_state.CALCULATING
         if current_closing_price < self.lower_band[-1]:
             return Action_state.BUY

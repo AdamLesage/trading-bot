@@ -20,6 +20,7 @@ class Bot:
         self.macd = MACD(6, 13, 9)
         self.limit = Limit(1.2, 0.95)
         self.risk = RiskIndicator(13)
+        self.bollinger = BollingerBands(13, 2)
 
     def run(self):
         while True:
@@ -44,41 +45,45 @@ class Bot:
             self.botState.closing_prices.append(current_closing_price)
             self.rsi.calculate_rsi(self.botState.closing_prices)
             self.macd.calculate_macd(self.botState.closing_prices)
+            self.bollinger.calculate_bollinger_bands(self.botState.closing_prices)
             affordable = dollars / current_closing_price
 
             macd_state = self.macd.get_macd_state(affordable, bitcoin)
             rsi_state = self.rsi.get_rsi_state(affordable, bitcoin, self.botAction)
-            # bollinger_state = self.limit.get_bollinger_state(self.botState.closing_prices[-1])
+            bollinger_state = self.bollinger.get_bollinger_state(self.botState.closing_prices[-1])
+            print(f"{bollinger_state=}", file=sys.stderr)
 
-            if self.limit.loss_limit(self.botState.closing_prices[-1]):
-                if bitcoin > 0.001:
-                    self.botAction.sellAction(bitcoin, self.risk.get_risk_state(self.botState.closing_prices))
-                    self.limit.update_sell()
-                    return
-                else:
-                    self.botAction.passAction()
-                    return
+            # if self.limit.loss_limit(self.botState.closing_prices[-1]):
+            #     if bitcoin > 0.001:
+            #         self.botAction.sellAction(bitcoin, self.risk.get_risk_state(self.botState.closing_prices))
+            #         self.limit.update_sell()
+            #         return
+            #     else:
+            #         self.botAction.passAction()
+            #         return
 
             # print(f"rsi: {rsi_state} macd: {macd_state}", file=sys.stderr)
-            print(f"risk indicator: {self.risk.get_risk_state(self.botState.closing_prices)}, current price: {current_closing_price}", file=sys.stderr)
-
-            if rsi_state == Action_state.BUY:
-                self.botAction.buyAction(affordable, self.risk.get_risk_state(self.botState.closing_prices))
-                self.limit.update_limit_buy(self.botState.closing_prices[-1])
-                return
-            elif rsi_state == Action_state.SELL:
-                self.botAction.sellAction(bitcoin, self.risk.get_risk_state(self.botState.closing_prices))
-                self.limit.update_sell()
-                return
-
+            # print(f"risk indicator: {self.risk.get_risk_state(self.botState.closing_prices)}, current price: {current_closing_price}", file=sys.stderr)
             if macd_state == Action_state.BUY:
                 self.botAction.buyAction(affordable, self.risk.get_risk_state(self.botState.closing_prices))
                 self.limit.update_limit_buy(self.botState.closing_prices[-1])
-            elif macd_state == Action_state.SELL:
+                return
+            elif macd_state == Action_state.SELL :
                 self.botAction.sellAction(bitcoin, self.risk.get_risk_state(self.botState.closing_prices))
                 self.limit.update_sell()
-            else:
-                self.botAction.passAction()
+                return
+
+            # if rsi_state == Action_state.BUY:
+            #     self.botAction.buyAction(affordable, self.risk.get_risk_state(self.botState.closing_prices))
+            #     self.limit.update_limit_buy(self.botState.closing_prices[-1])
+            #     return
+            # elif rsi_state == Action_state.SELL:
+            #     self.botAction.sellAction(bitcoin, self.risk.get_risk_state(self.botState.closing_prices))
+            #     self.limit.update_sell()
+            #     return
+            self.botAction.passAction()
+
+
 
 class Candle:
     def __init__(self, format, intel):

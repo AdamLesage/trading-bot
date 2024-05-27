@@ -19,20 +19,20 @@ class BotAction:
         if risk == "HIGH":
             to_buy = 0.2 * affordable
         elif risk == "LOW":
-            to_buy = 0.8 * affordable
+            to_buy = affordable
         else:
-            to_buy = 0.5 * affordable
+            to_buy = 0.4 * affordable
         return to_buy
 
     def determineHowManyToSell(self, risk: str, bitcoin: float) -> float:
         """Returns best amount of bitcoin to sell"""
         to_sell = 0
         if risk == "HIGH":
-            to_sell = 0.8 * bitcoin
+            to_sell = bitcoin
         elif risk == "LOW":
             to_sell = 0.2 * bitcoin
         else:
-            to_sell = 0.5 * bitcoin
+            to_sell = 0.4 * bitcoin
         return to_sell
 
     def sellAction(self, bitcoin: float, risk: str) -> None:
