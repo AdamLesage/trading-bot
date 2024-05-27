@@ -6,6 +6,7 @@ __version__ = "1.0"
 import sys
 from MACD import MACD
 from RSI import RSI
+from BollingerBands import BollingerBands
 from BotAction import BotAction
 from ActionState import Action_state
 from Limit import Limit
