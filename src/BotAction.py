@@ -13,52 +13,50 @@ class BotAction:
         """Prints no_moves to stdout"""
         print("no_moves", flush=True)
 
-    def determineHowManyToBuy(self, closing_prices: list, affordable: float) -> float:
+    def determineHowManyToBuy(self, affordable: float, risk: str) -> float:
         """Returns best amount of bitcoin to buy from the current closing prices"""
         to_buy = 0
-        mean_close = sum(closing_prices) / len(closing_prices)
-        standard_deviation = (sum([(x - mean_close) ** 2 for x in closing_prices]) / len(closing_prices)) ** 0.5
-        if closing_prices[-1] < mean_close - standard_deviation: # current price is below the mean - standard deviation so buy more
-            to_buy = 3 * affordable
-        elif closing_prices[-1] > mean_close + standard_deviation: # current price is above the mean + standard deviation so buy less
+        if risk == "HIGH":
             to_buy = 0.2 * affordable
-        elif closing_prices[-1] < mean_close: # current price is below the mean so buy more
+        elif risk == "LOW":
             to_buy = 0.8 * affordable
-        else: # current price is above the mean so buy less
-            to_buy = 0.4 * affordable
+        else:
+            to_buy = 0.5 * affordable
         return to_buy
 
-    def determineHowManyToSell(self, closing_prices: list, bitcoin: float) -> float:
+    def determineHowManyToSell(self, risk: str, bitcoin: float) -> float:
         """Returns best amount of bitcoin to sell"""
         to_sell = 0
-        mean_close = sum(closing_prices) / len(closing_prices)
-        standard_deviation = (sum([(x - mean_close) ** 2 for x in closing_prices]) / len(closing_prices)) ** 0.5
-        if closing_prices[-1] < mean_close - standard_deviation: # current price is below the mean - standard deviation so sell less
-            to_sell = 0.2 * bitcoin
-        elif closing_prices[-1] > mean_close + standard_deviation: # current price is above the mean + standard deviation so sell more
-            to_sell = 3 * bitcoin
-        elif closing_prices[-1] < mean_close: # current price is below the mean so sell less
-            to_sell = 0.4 * bitcoin
-        else: # current price is above the mean so sell more
+        if risk == "HIGH":
             to_sell = 0.8 * bitcoin
+        elif risk == "LOW":
+            to_sell = 0.2 * bitcoin
+        else:
+            to_sell = 0.5 * bitcoin
         return to_sell
 
-    def sellAction(self, closing_prices: list, bitcoin: float) -> None:
+    def sellAction(self, bitcoin: float, risk: str) -> None:
         """Prints sell USDT_BTC {currency} to stdout"""
         if bitcoin == 0:
             self.passAction()
             return
-        value = self.determineHowManyToSell(closing_prices, bitcoin)
+        value = self.determineHowManyToSell(risk, bitcoin)
         if value > bitcoin:
             value = bitcoin
+        if value == 0:
+            self.passAction()
+            return
         print(f"sell USDT_BTC {value}", flush=True)
 
-    def buyAction(self, closing_prices: list, affordable: float, bitcoin: float) -> None:
+    def buyAction(self, affordable: float, risk: str) -> None:
         """Prints buy USDT_BTC {currency} to stdout"""
         if affordable == 0:
             self.passAction()
             return
-        value = self.determineHowManyToBuy(closing_prices, affordable)
+        value = self.determineHowManyToBuy(affordable, risk)
         if value > affordable:
             value = affordable
+        if value == 0:
+            self.passAction()
+            return
         print(f"buy USDT_BTC {value}", flush=True)

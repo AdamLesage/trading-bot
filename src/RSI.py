@@ -16,6 +16,7 @@ class RSI:
         self.rsi = []
         self.gain = []
         self.loss = []
+        self.signalState = []
         self.period = period
         self.overbought = False
         self.oversold = False
@@ -58,12 +59,43 @@ class RSI:
 
     def get_rsi_state(self, affordable: float, bitcoin : float, botAction: BotAction) -> Action_state:
         if len(self.rsi) == 0:
+            self.signalState.append(Action_state.NEUTRAL)
             return Action_state.NEUTRAL
 
         if self.rsi[-1] == None:
+            self.signalState.append(Action_state.CALCULATING)
             return Action_state.CALCULATING
-        if self.rsi[-1] > 70 and bitcoin > 0.001:
+        if self.rsi[-1] > 60 and bitcoin > 0.001:
+            self.signalState.append(Action_state.SELL)
             return Action_state.SELL
-        if self.rsi[-1] < 30 and affordable > 0.001:
+        if self.rsi[-1] < 40 and affordable > 0.001:
+            self.signalState.append(Action_state.BUY)
             return Action_state.BUY
+        self.signalState.append(Action_state.NEUTRAL)
+        return Action_state.NEUTRAL
+    
+    def get_rsi_state_on_period(self, affordable: float, bitcoin : float, period : int) -> Action_state:
+        if len(self.rsi) == 0:
+            self.signalState.append(Action_state.NEUTRAL)
+            return Action_state.NEUTRAL
+
+        if self.rsi[-1] == None:
+            self.signalState.append(Action_state.CALCULATING)
+            return Action_state.CALCULATING
+        elif self.rsi[-1] > 80 and bitcoin > 0.001:
+            self.signalState.append(Action_state.SELL)
+        elif self.rsi[-1] < 40 and affordable > 0.001:
+            self.signalState.append(Action_state.BUY)
+        else:
+            self.signalState.append(Action_state.NEUTRAL)
+        i = 1
+        
+        if (self.signalState[-1] != Action_state.SELL and self.signalState[-2] == Action_state.SELL):
+            return Action_state.SELL
+        # return (self.signalState[-1])
+        # for i in range(period + 1):
+        #     if (self.signalState[-i] == Action_state.BUY):
+        #         return Action_state.BUY
+        #     if (self.signalState[-i] == Action_state.SELL):
+        #         return Action_state.SELL
         return Action_state.NEUTRAL
