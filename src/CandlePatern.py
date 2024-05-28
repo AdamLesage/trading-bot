@@ -27,6 +27,10 @@ class CandlePatern:
             lower_wick = close - low
             volume = abs(close - open)
         return volume, upper_wick, lower_wick
+    
+    def getCandleVolume(self, close, open) -> float:
+        volume = abs(close - open)
+        return volume
 
     def Hammer(self, chart: Chart) -> bool:
         if (chart.opens[-1] < chart.closes[-1]):
@@ -42,11 +46,23 @@ class CandlePatern:
                 return True
         return False
     
-    def BullishEngulfing(self, chart: Chart):
+    def BullishEngulfing(self, chart: Chart) -> bool:
         if len(chart.closes) < 2:
             return False
         if chart.closes[-2] < chart.opens[-2] and chart.closes[-1] > chart.opens[-1]:
             if chart.lows[-1] <= chart.lows[-2] and chart.closes[-1] >= chart.highs[-2]:
+                return True
+        return False
+    
+    def MorningStar(self, chart: Chart) -> bool:
+        if len(chart.closes) < 3:
+            return False
+        if (chart.opens[-3] > chart.closes[-3] and chart.opens[-1] < chart.closes[-1]):
+            volume = self.getCandleVolume(chart.closes[-3], chart.opens[-3])
+            volume2 = self.getCandleVolume(chart.closes[-2], chart.opens[-2])
+            volume3 = self.getCandleVolume(chart.closes[-1], chart.opens[-1])
+            if volume2 * 4 < volume and volume2 * 4 < volume3:
+                print(volume, volume2, volume3, file=sys.stderr)
                 return True
         return False
                 
@@ -58,6 +74,9 @@ class CandlePatern:
             print(f'InverseHammer candle', file=sys.stderr)
             return Action_state.BUY
         if (self.BullishEngulfing(chart) == True):
-            print(f'BullishEngulfing candle', file=sys.stderr)
+            print(f'BullishEngulfing patern', file=sys.stderr)
+            return Action_state.BUY
+        if (self.MorningStar(chart) == True):
+            print(f'MorningStar pattern', file=sys.stderr)
             return Action_state.BUY
         return Action_state.NEUTRAL
