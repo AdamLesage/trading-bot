@@ -101,6 +101,18 @@ class CandlePatern:
                 return True
         return False
 
+    def EveningStar(self, chart: Chart):
+        if len(chart.closes) < 3:
+            return False
+        if (chart.opens[-3] < chart.closes[-3] and chart.opens[-1] > chart.closes[-1]):
+            volume = self.getCandleVolume(chart.closes[-3], chart.opens[-3])
+            volume2 = self.getCandleVolume(chart.closes[-2], chart.opens[-2])
+            volume3 = self.getCandleVolume(chart.closes[-1], chart.opens[-1])
+            if volume2 * 4 < volume and volume2 * 4 < volume3:
+                print(volume, volume2, volume3, file=sys.stderr)
+                return True
+        return False
+    
     def useCandlePatern(self, chart: Chart) -> Action_state:
         if (self.Hammer(chart) == True):
             print(f'Hammer candle', file=sys.stderr)
@@ -125,5 +137,8 @@ class CandlePatern:
             return Action_state.SELL
         if (self.BearishEngulfing(chart) == True):
             print(f'BearishEngulfing pattern', file=sys.stderr)
+            return Action_state.SELL
+        if (self.EveningStar(chart) == True):
+            print(f'EveningStar pattern', file=sys.stderr)
             return Action_state.SELL
         return Action_state.NEUTRAL
