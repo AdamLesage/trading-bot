@@ -45,12 +45,19 @@ class CandlePatern:
     def BullishEngulfing(self, chart: Chart):
         if len(chart.closes) < 2:
             return False
-
+        if chart.closes[-2] < chart.opens[-2] and chart.closes[-1] > chart.opens[-1]:
+            if chart.lows[-1] <= chart.lows[-2] and chart.closes[-1] >= chart.highs[-2]:
+                return True
+        return False
+                
     def useCandlePatern(self, chart: Chart) -> Action_state:
         if (self.Hammer(chart) == True):
             print(f'Hammer candle', file=sys.stderr)
             return Action_state.BUY
         if (self.InverseHammer(chart) == True):
             print(f'InverseHammer candle', file=sys.stderr)
+            return Action_state.BUY
+        if (self.BullishEngulfing(chart) == True):
+            print(f'BullishEngulfing candle', file=sys.stderr)
             return Action_state.BUY
         return Action_state.NEUTRAL
