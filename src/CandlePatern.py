@@ -78,6 +78,13 @@ class CandlePatern:
                 upper_wick * 2 < volume and lower_wick * 2 < volume):
                 return True
         return False
+    
+    def HangingMan(self, chart: Chart):
+        if (chart.opens[-1] > chart.closes[-1]):
+            if (chart.closes[-1] * 1.1 >= chart.highs[-1]):
+                if (chart.opens[-1] - chart.closes[-1] < (chart.opens[-1] - chart.lows[-1]) * 0.5):
+                    return True     
+        return False
 
     def useCandlePatern(self, chart: Chart) -> Action_state:
         if (self.Hammer(chart) == True):
@@ -95,4 +102,7 @@ class CandlePatern:
         if (self.ThreeWhiteSoldiers(chart) == True):
             print(f'ThreeWhiteSoldiers pattern', file=sys.stderr)
             return Action_state.BUY
+        if (self.HangingMan(chart) == True):
+            print(f'HangingMan pattern', file=sys.stderr)
+            return Action_state.SELL
         return Action_state.NEUTRAL
