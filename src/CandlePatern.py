@@ -66,6 +66,19 @@ class CandlePatern:
                 return True
         return False
                 
+    def ThreeWhiteSoldiers(self, chart: Chart):
+        if len(chart.closes) < 3:
+            return False
+        if chart.opens[-3] < chart.closes[-3] and chart.opens[-2] < chart.closes[-2] and chart.opens[-1] < chart.closes[-1]:
+            volume, upper_wick, lower_wick = self.getCandleInfo(chart.highs[-3], chart.lows[-3], chart.closes[-3], chart.opens[-3])
+            volume2, upper_wick2, lower_wick2 = self.getCandleInfo(chart.highs[-2], chart.lows[-2], chart.closes[-2], chart.opens[-2])
+            volume3, upper_wick3, lower_wick3 = self.getCandleInfo(chart.highs[-1], chart.lows[-1], chart.closes[-1], chart.opens[-1])
+            if (upper_wick3 * 2 < volume3 and lower_wick3 * 2 < volume3 and
+                upper_wick2 * 2 < volume2 and lower_wick2 * 2 < volume2 and
+                upper_wick * 2 < volume and lower_wick * 2 < volume):
+                return True
+        return False
+
     def useCandlePatern(self, chart: Chart) -> Action_state:
         if (self.Hammer(chart) == True):
             print(f'Hammer candle', file=sys.stderr)
@@ -74,9 +87,12 @@ class CandlePatern:
             print(f'InverseHammer candle', file=sys.stderr)
             return Action_state.BUY
         if (self.BullishEngulfing(chart) == True):
-            print(f'BullishEngulfing patern', file=sys.stderr)
+            print(f'BullishEngulfing pattern', file=sys.stderr)
             return Action_state.BUY
         if (self.MorningStar(chart) == True):
             print(f'MorningStar pattern', file=sys.stderr)
+            return Action_state.BUY
+        if (self.ThreeWhiteSoldiers(chart) == True):
+            print(f'ThreeWhiteSoldiers pattern', file=sys.stderr)
             return Action_state.BUY
         return Action_state.NEUTRAL
