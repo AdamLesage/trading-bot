@@ -92,6 +92,14 @@ class CandlePatern:
             if lower_wick * 2 < volume and upper_wick > volume * 2:
                 return True
         return False
+    
+    def BearishEngulfing(self, chart: Chart):
+        if len(chart.closes) < 2:
+            return False
+        if chart.closes[-2] > chart.opens[-2] and chart.closes[-1] < chart.opens[-1]:
+            if chart.highs[-1] <= chart.highs[-2] and chart.lows[-1] >= chart.lows[-2]:
+                return True
+        return False
 
     def useCandlePatern(self, chart: Chart) -> Action_state:
         if (self.Hammer(chart) == True):
@@ -114,5 +122,8 @@ class CandlePatern:
             return Action_state.SELL
         if (self.ShootingStar(chart) == True):
             print(f'ShootingStar pattern', file=sys.stderr)
+            return Action_state.SELL
+        if (self.BearishEngulfing(chart) == True):
+            print(f'BearishEngulfing pattern', file=sys.stderr)
             return Action_state.SELL
         return Action_state.NEUTRAL
