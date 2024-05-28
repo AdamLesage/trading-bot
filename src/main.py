@@ -18,8 +18,9 @@ class Bot:
         self.rsi = RSI(13)
         self.botAction = BotAction()
         self.macd = MACD(6, 13, 9)
-        self.limit = Limit(1.2, 0.95)
+        self.limit = Limit(1.2, 0.925)
         self.risk = RiskIndicator(13)
+        self.bollinger = BollingerBands(13, 2)
 
     def run(self):
         while True:
@@ -39,46 +40,44 @@ class Bot:
                 self.botState.update_game(tmp[2], tmp[3])
         if tmp[0] == "action":
             dollars = self.botState.stacks["USDT"]
+            self.botState.money_can_spend = dollars
             bitcoin = self.botState.stacks["BTC"]
             current_closing_price = self.botState.charts["USDT_BTC"].closes[-1]
             self.botState.closing_prices.append(current_closing_price)
+            # print(f"{dollars=}, {bitcoin=} current total value: {dollars + bitcoin * current_closing_price}", file=sys.stderr)
+            if self.botAction.sellEverything(bitcoin, dollars, current_closing_price) == True:
+                return
+
             self.rsi.calculate_rsi(self.botState.closing_prices)
             self.macd.calculate_macd(self.botState.closing_prices)
+            self.bollinger.calculate_bollinger_bands(self.botState.closing_prices)
             affordable = dollars / current_closing_price
+
 
             macd_state = self.macd.get_macd_state(affordable, bitcoin)
             rsi_state = self.rsi.get_rsi_state(affordable, bitcoin, self.botAction)
-            # bollinger_state = self.limit.get_bollinger_state(self.botState.closing_prices[-1])
+            bollinger_state = self.bollinger.get_bollinger_state(self.botState.closing_prices[-1])
+            # print(f"{bollinger_state=}", file=sys.stderr)
 
             if self.limit.loss_limit(self.botState.closing_prices[-1]):
-                if bitcoin > 0.001:
-                    self.botAction.sellAction(bitcoin, self.risk.get_risk_state(self.botState.closing_prices))
-                    self.limit.update_sell()
-                    return
-                else:
-                    self.botAction.passAction()
-                    return
-
-            # print(f"rsi: {rsi_state} macd: {macd_state}", file=sys.stderr)
-            print(f"risk indicator: {self.risk.get_risk_state(self.botState.closing_prices)}, current price: {current_closing_price}", file=sys.stderr)
-
-            if rsi_state == Action_state.BUY:
-                self.botAction.buyAction(affordable, self.risk.get_risk_state(self.botState.closing_prices))
-                self.limit.update_limit_buy(self.botState.closing_prices[-1])
-                return
-            elif rsi_state == Action_state.SELL:
                 self.botAction.sellAction(bitcoin, self.risk.get_risk_state(self.botState.closing_prices))
                 self.limit.update_sell()
                 return
 
+            # print(f"rsi: {rsi_state} macd: {macd_state}", file=sys.stderr)
+            # print(f"risk indicator: {self.risk.get_risk_state(self.botState.closing_prices)}, current price: {current_closing_price}", file=sys.stderr)
             if macd_state == Action_state.BUY:
                 self.botAction.buyAction(affordable, self.risk.get_risk_state(self.botState.closing_prices))
                 self.limit.update_limit_buy(self.botState.closing_prices[-1])
+                return
             elif macd_state == Action_state.SELL:
                 self.botAction.sellAction(bitcoin, self.risk.get_risk_state(self.botState.closing_prices))
                 self.limit.update_sell()
-            else:
-                self.botAction.passAction()
+                return
+
+            self.botAction.passAction()
+
+
 
 class Candle:
     def __init__(self, format, intel):
@@ -138,6 +137,7 @@ class BotState:
         self.stacks = dict()
         self.charts = dict()
         self.closing_prices = []
+        self.money_can_spend = 0
 
     def update_chart(self, pair: str, new_candle_str: str):
         if not (pair in self.charts):
