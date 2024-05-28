@@ -48,6 +48,7 @@ class Bot:
             self.botState.closing_prices.append(current_closing_price)
             # print(f"{dollars=}, {bitcoin=} current total value: {dollars + bitcoin * current_closing_price}", file=sys.stderr)
             if self.botAction.sellEverything(bitcoin, self.botState.money_can_spend, current_closing_price) == True:
+                self.limit.update_sell()
                 self.botState.isAbove1450 = True
 
             self.rsi.calculate_rsi(self.botState.closing_prices)
@@ -61,22 +62,22 @@ class Bot:
             print(f"{self.botState.money_can_spend=}, {macd_state=}, {bitcoin=}", file=sys.stderr)
             # print(f"{bollinger_state=}", file=sys.stderr)
 
-            # if self.limit.loss_limit(self.botState.closing_prices[-1]):
-            #     self.botAction.sellAction(bitcoin, self.risk.get_risk_state(self.botState.closing_prices))
-            #     self.limit.update_sell()
-            #     return
+            if self.limit.loss_limit(self.botState.closing_prices[-1]):
+                self.botAction.sellAction(bitcoin, self.risk.get_risk_state(self.botState.closing_prices))
+                self.limit.update_sell()
+                return
 
             # print(f"rsi: {rsi_state} macd: {macd_state}", file=sys.stderr)
             # print(f"risk indicator: {self.risk.get_risk_state(self.botState.closing_prices)}, current price: {current_closing_price}", file=sys.stderr)
             if macd_state == Action_state.BUY:
                 canUpdateLimit = self.botAction.buyAction(affordable, self.risk.get_risk_state(self.botState.closing_prices))
-                if canUpdateLimit:
-                    self.limit.update_limit_buy(self.botState.closing_prices[-1])
+                # if canUpdateLimit:
+                #     self.limit.update_limit_buy(self.botState.closing_prices[-1])
                 return
             elif macd_state == Action_state.SELL:
                 canUpdateLimit = self.botAction.sellAction(bitcoin, self.risk.get_risk_state(self.botState.closing_prices))
-                if canUpdateLimit:
-                    self.limit.update_sell()
+                # if canUpdateLimit:
+                #     self.limit.update_sell()
                 return
 
             self.botAction.passAction()
