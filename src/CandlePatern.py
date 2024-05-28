@@ -42,7 +42,7 @@ class CandlePatern:
     def InverseHammer(self, chart: Chart) -> bool:
         volume, upper_wick, lower_wick = self.getCandleInfo(chart.highs[-1], chart.lows[-1], chart.closes[-1], chart.opens[-1])
         if chart.opens[-1] < chart.closes[-1]:
-            if lower_wick < volume and upper_wick > volume * 2:
+            if lower_wick * 2 < volume and upper_wick > volume * 2:
                 return True
         return False
     
@@ -85,6 +85,13 @@ class CandlePatern:
                 if (chart.opens[-1] - chart.closes[-1] < (chart.opens[-1] - chart.lows[-1]) * 0.5):
                     return True     
         return False
+    
+    def ShootingStar(self, chart: Chart):
+        volume, upper_wick, lower_wick = self.getCandleInfo(chart.highs[-1], chart.lows[-1], chart.closes[-1], chart.opens[-1])
+        if chart.opens[-1] > chart.closes[-1]:
+            if lower_wick * 2 < volume and upper_wick > volume * 2:
+                return True
+        return False
 
     def useCandlePatern(self, chart: Chart) -> Action_state:
         if (self.Hammer(chart) == True):
@@ -104,5 +111,8 @@ class CandlePatern:
             return Action_state.BUY
         if (self.HangingMan(chart) == True):
             print(f'HangingMan pattern', file=sys.stderr)
+            return Action_state.SELL
+        if (self.ShootingStar(chart) == True):
+            print(f'ShootingStar pattern', file=sys.stderr)
             return Action_state.SELL
         return Action_state.NEUTRAL
