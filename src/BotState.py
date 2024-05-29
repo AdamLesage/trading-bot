@@ -22,6 +22,9 @@ class BotState:
         self.stacks = dict()
         self.charts = dict()
         self.closing_prices = []
+        self.isAboveFeeToSell = False
+        self.feeToSell = 0
+        self.mustCalculateFeeToSell = True
 
     def update_chart(self, pair: str, new_candle_str: str):
         if not (pair in self.charts):
@@ -31,6 +34,9 @@ class BotState:
 
     def update_stack(self, key: str, value: float):
         self.stacks[key] = value
+        if key == "USDT" and self.mustCalculateFeeToSell == True:
+            self.feeToSell = self.stacks["USDT"] + self.stacks["USDT"] * 0.4
+            self.mustCalculateFeeToSell = False
 
     def update_settings(self, key: str, value: str):
         if key == "timebank":

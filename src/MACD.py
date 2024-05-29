@@ -23,6 +23,14 @@ class MACD():
         self.short_emas = []
         self.long_emas = []
 
+    def reset(self):
+        """ Reset the MACD """
+        self.macd_line = []
+        self.signal_line = []
+        self.histogram = []
+        self.short_emas = []
+        self.long_emas = []
+
     def ewm(self, data: list, span: int) -> list:
         """ Exponential Weighted Moving Average """
         weight = 2 / (span + 1)

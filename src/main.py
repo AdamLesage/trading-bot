@@ -42,18 +42,22 @@ class Bot:
             if tmp[1] == "game":
                 self.botState.update_game(tmp[2], tmp[3])
         if tmp[0] == "action":
-            dollars = self.botState.stacks["USDT"]
             bitcoin = self.botState.stacks["BTC"]
             current_closing_price = self.botState.charts["USDT_BTC"].closes[-1]
+            if self.botState.isAboveFeeToSell == True:
+                self.botState.money_can_spend = self.botState.feeToSell - 1000
+            else:
+                self.botState.money_can_spend = self.botState.stacks["USDT"]
             self.botState.closing_prices.append(current_closing_price)
+            # print(f"{dollars=}, {bitcoin=} current total value: {dollars + bitcoin * current_closing_price}", file=sys.stderr)
+            if self.botAction.sellEverything(bitcoin, self.botState.money_can_spend, current_closing_price, self.botState.feeToSell) == True:
+                self.limit.update_sell()
+                self.botState.isAboveFeeToSell = True
+
             self.rsi.calculate_rsi(self.botState.closing_prices)
             self.macd.calculate_macd(self.botState.closing_prices)
             self.bollinger.calculate_bollinger_bands(self.botState.closing_prices)
-            affordable = dollars / current_closing_price
-
-            # print(f"{dollars=}, {bitcoin=} current total value: {dollars + bitcoin * current_closing_price}", file=sys.stderr)
-            if self.botAction.sellEverything(bitcoin, dollars, current_closing_price) == True:
-                return
+            affordable = self.botState.money_can_spend / current_closing_price
 
             macd_state = self.macd.get_macd_state(affordable, bitcoin)
             macd_tendency = self.macd.get_macd_tendency()
