@@ -56,10 +56,6 @@ class Bot:
             self.bollinger.calculate_bollinger_bands(self.botState.closing_prices)
             affordable = self.botState.money_can_spend / current_closing_price
 
-            # print(f"{dollars=}, {bitcoin=} current total value: {dollars + bitcoin * current_closing_price}", file=sys.stderr)
-            if self.botAction.sellEverything(bitcoin, self.botState.money_can_spend, current_closing_price) == True:
-                return
-
             macd_state = self.macd.get_macd_state(affordable, bitcoin)
             rsi_state = self.rsi.get_rsi_state(affordable, bitcoin, self.botAction)
             bollinger_state = self.bollinger.get_bollinger_state(self.botState.closing_prices[-1])
@@ -158,7 +154,7 @@ class BotState:
 
     def update_stack(self, key: str, value: float):
         if self.mustCalculateFee and key == "USDT":
-            self.feeToSell = value + value * 0.4 # 0.4% fee if fee is 1000 then feeToSell = 1400
+            self.feeToSell = value + value * 2 # 0.4% fee if fee is 1000 then feeToSell = 1400
             print(f"{self.feeToSell=}", file=sys.stderr)
             self.mustCalculateFee = False
         self.stacks[key] = value
