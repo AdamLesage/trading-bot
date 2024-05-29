@@ -68,14 +68,14 @@ class BotAction:
         print(f"buy USDT_BTC {value}", flush=True)
         return True
 
-    def sellEverything(self, bitcoin: float, dollars: float, current_closing_price: float) -> bool:
+    def sellEverything(self, bitcoin: float, dollars: float, current_closing_price: float, fee_to_sell: int) -> bool:
         """Sell all bitcoin"""
         if self.sold_everything == True:
             self.passAction()
             # print(f"Already sold everything {bitcoin=}", file=sys.stderr)
             return True
         # print(f"{dollars=}, {bitcoin=} current total value: {dollars + bitcoin * current_closing_price}", file=sys.stderr)
-        if dollars + bitcoin * current_closing_price > 1450:
+        if dollars + bitcoin * current_closing_price > fee_to_sell:
             # print(f"SELL EVERYTHING", file=sys.stderr)
             print(f"sell USDT_BTC {bitcoin}", flush=True)
             self.sold_everything = True

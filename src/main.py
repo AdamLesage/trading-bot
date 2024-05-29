@@ -41,15 +41,15 @@ class Bot:
         if tmp[0] == "action":
             bitcoin = self.botState.stacks["BTC"]
             current_closing_price = self.botState.charts["USDT_BTC"].closes[-1]
-            if self.botState.isAbove1450 == True:
+            if self.botState.isAboveFeeToSell == True:
                 self.botState.money_can_spend = self.botState.stacks["USDT"] - 1000
             else:
                 self.botState.money_can_spend = self.botState.stacks["USDT"]
             self.botState.closing_prices.append(current_closing_price)
             # print(f"{dollars=}, {bitcoin=} current total value: {dollars + bitcoin * current_closing_price}", file=sys.stderr)
-            if self.botAction.sellEverything(bitcoin, self.botState.money_can_spend, current_closing_price) == True:
+            if self.botAction.sellEverything(bitcoin, self.botState.money_can_spend, current_closing_price, self.botState.feeToSell) == True:
                 self.limit.update_sell()
-                self.botState.isAbove1450 = True
+                self.botState.isAboveFeeToSell = True
 
             self.rsi.calculate_rsi(self.botState.closing_prices)
             self.macd.calculate_macd(self.botState.closing_prices)
@@ -143,7 +143,9 @@ class BotState:
         self.charts = dict()
         self.closing_prices = []
         self.money_can_spend = 0
-        self.isAbove1450 = False
+        self.isAboveFeeToSell = False
+        self.feeToSell = 0
+        self.mustCalculateFee = True
 
     def update_chart(self, pair: str, new_candle_str: str):
         if not (pair in self.charts):
@@ -152,6 +154,10 @@ class BotState:
         self.charts[pair].add_candle(new_candle_obj)
 
     def update_stack(self, key: str, value: float):
+        if self.mustCalculateFee and key == "USDT":
+            self.feeToSell = value + value * 0.4 # 0.4% fee if fee is 1000 then feeToSell = 1400
+            print(f"{self.feeToSell=}", file=sys.stderr)
+            self.mustCalculateFee = False
         self.stacks[key] = value
 
     def update_settings(self, key: str, value: str):
