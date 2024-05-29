@@ -56,10 +56,13 @@ class Bot:
             self.bollinger.calculate_bollinger_bands(self.botState.closing_prices)
             affordable = self.botState.money_can_spend / current_closing_price
 
+            # print(f"{dollars=}, {bitcoin=} current total value: {dollars + bitcoin * current_closing_price}", file=sys.stderr)
+            if self.botAction.sellEverything(bitcoin, self.botState.money_can_spend, current_closing_price) == True:
+                return
+
             macd_state = self.macd.get_macd_state(affordable, bitcoin)
             rsi_state = self.rsi.get_rsi_state(affordable, bitcoin, self.botAction)
             bollinger_state = self.bollinger.get_bollinger_state(self.botState.closing_prices[-1])
-            print(f"{self.botState.money_can_spend=}, {macd_state=}, {bitcoin=}", file=sys.stderr)
             # print(f"{bollinger_state=}", file=sys.stderr)
 
             if self.limit.loss_limit(self.botState.closing_prices[-1]):
