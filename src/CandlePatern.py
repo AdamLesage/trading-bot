@@ -9,7 +9,7 @@ from ActionState import Action_state
 from Chart import Chart
 import sys
 from typing import Tuple
-
+from TradeTendency import TradeTendency
 class CandlePatern:
     def __init__(self):
         pass
@@ -113,32 +113,34 @@ class CandlePatern:
                 return True
         return False
     
-    def useCandlePatern(self, chart: Chart) -> Action_state:
-        if (self.Hammer(chart) == True):
-            print(f'Hammer candle', file=sys.stderr)
-            return Action_state.BUY
-        if (self.InverseHammer(chart) == True):
-            print(f'InverseHammer candle', file=sys.stderr)
-            return Action_state.BUY
-        if (self.BullishEngulfing(chart) == True):
-            print(f'BullishEngulfing pattern', file=sys.stderr)
-            return Action_state.BUY
-        if (self.MorningStar(chart) == True):
-            print(f'MorningStar pattern', file=sys.stderr)
-            return Action_state.BUY
-        if (self.ThreeWhiteSoldiers(chart) == True):
-            print(f'ThreeWhiteSoldiers pattern', file=sys.stderr)
-            return Action_state.BUY
-        if (self.HangingMan(chart) == True):
-            print(f'HangingMan pattern', file=sys.stderr)
-            return Action_state.SELL
-        if (self.ShootingStar(chart) == True):
-            print(f'ShootingStar pattern', file=sys.stderr)
-            return Action_state.SELL
-        if (self.BearishEngulfing(chart) == True):
-            print(f'BearishEngulfing pattern', file=sys.stderr)
-            return Action_state.SELL
-        if (self.EveningStar(chart) == True):
-            print(f'EveningStar pattern', file=sys.stderr)
-            return Action_state.SELL
+    def useCandlePatern(self, chart: Chart, tendency: TradeTendency) -> Action_state:
+        if (tendency == TradeTendency.DOWN):
+            if (self.Hammer(chart) == True):
+                print(f'Hammer candle', file=sys.stderr)
+                return Action_state.BUY
+            if (self.InverseHammer(chart) == True):
+                print(f'InverseHammer candle', file=sys.stderr)
+                return Action_state.BUY
+            # if (self.BullishEngulfing(chart) == True):
+            #     print(f'BullishEngulfing pattern', file=sys.stderr)
+            #     return Action_state.BUY
+            if (self.MorningStar(chart) == True):
+                print(f'MorningStar pattern', file=sys.stderr)
+                return Action_state.BUY
+            if (self.ThreeWhiteSoldiers(chart) == True):
+                print(f'ThreeWhiteSoldiers pattern', file=sys.stderr)
+                return Action_state.BUY
+        if (tendency == TradeTendency.UP):
+            if (self.HangingMan(chart) == True):
+                print(f'HangingMan pattern', file=sys.stderr)
+                return Action_state.SELL
+            if (self.ShootingStar(chart) == True):
+                print(f'ShootingStar pattern', file=sys.stderr)
+                return Action_state.SELL
+            # if (self.BearishEngulfing(chart) == True):
+            #     print(f'BearishEngulfing pattern', file=sys.stderr)
+            #     return Action_state.SELL
+            if (self.EveningStar(chart) == True):
+                print(f'EveningStar pattern', file=sys.stderr)
+                return Action_state.SELL
         return Action_state.NEUTRAL

@@ -8,6 +8,7 @@
 from BotAction import BotAction
 import sys
 from ActionState import Action_state
+from TradeTendency import TradeTendency
 
 class MACD():
     def __init__(self, short_period: int, long_period: int, signal_period: int, epsilon: float = 1e-5):
@@ -76,3 +77,15 @@ class MACD():
         if self.short_emas[-1] < self.long_emas[-1] and self.short_emas[-2] > self.long_emas[-2]: # If MACD line crosses signal line and should sell
             return Action_state.SELL
         return Action_state.NEUTRAL
+
+    def get_macd_tendency(self) -> TradeTendency:
+        """ Get MACD tendency """
+        # print(f"{self.epsilon:.6f}, {self.histogram[-1]=}", file=sys.stderr)
+        if not self.histogram or self.histogram[-1] == None: # If histogram is empty or None
+            return TradeTendency.NONE
+
+        if self.short_emas[-1] > self.long_emas[-1]: # If MACD line crosses signal line and should buy
+            return TradeTendency.UP
+        if self.short_emas[-1]  < self.long_emas[-1]: # If MACD line crosses signal line and should sell
+            return TradeTendency.DOWN
+        return TradeTendency.NONE

@@ -52,9 +52,17 @@ class Bot:
             affordable = dollars / current_closing_price
 
             macd_state = self.macd.get_macd_state(affordable, bitcoin)
+            macd_tendency = self.macd.get_macd_tendency()
             rsi_state = self.rsi.get_rsi_state(affordable, bitcoin, self.botAction)
-            self.candlePatern.useCandlePatern(self.botState.charts["USDT_BTC"])
+            candle_patern_state = self.candlePatern.useCandlePatern(self.botState.charts["USDT_BTC"], macd_tendency)
             bollinger_state = self.bollinger.get_bollinger_state(self.botState.closing_prices[-1])
+            if candle_patern_state == Action_state.BUY:
+                self.botAction.buyAction(affordable, self.risk.get_risk_state(self.botState.closing_prices))
+                return
+            elif candle_patern_state == Action_state.SELL and bitcoin >= 0.001:
+                self.botAction.sellAction(bitcoin, self.risk.get_risk_state(self.botState.closing_prices))
+                return
+
             # print(f"{bollinger_state=}", file=sys.stderr)
 
             # if self.limit.loss_limit(self.botState.closing_prices[-1]):
@@ -68,14 +76,14 @@ class Bot:
 
             # print(f"rsi: {rsi_state} macd: {macd_state}", file=sys.stderr)
             # print(f"risk indicator: {self.risk.get_risk_state(self.botState.closing_prices)}, current price: {current_closing_price}", file=sys.stderr)
-            if macd_state == Action_state.BUY:
-                self.botAction.buyAction(affordable, self.risk.get_risk_state(self.botState.closing_prices))
-                self.limit.update_limit_buy(self.botState.closing_prices[-1])
-                return
-            elif macd_state == Action_state.SELL :
-                self.botAction.sellAction(bitcoin, self.risk.get_risk_state(self.botState.closing_prices))
-                self.limit.update_sell()
-                return
+            # if macd_state == Action_state.BUY:
+            #     self.botAction.buyAction(affordable, self.risk.get_risk_state(self.botState.closing_prices))
+            #     self.limit.update_limit_buy(self.botState.closing_prices[-1])
+            #     return
+            # elif macd_state == Action_state.SELL :
+            #     self.botAction.sellAction(bitcoin, self.risk.get_risk_state(self.botState.closing_prices))
+            #     self.limit.update_sell()
+            #     return
 
             # if rsi_state == Action_state.BUY:
             #     self.botAction.buyAction(affordable, self.risk.get_risk_state(self.botState.closing_prices))
